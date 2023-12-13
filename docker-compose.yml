@@ -4,4 +4,4 @@ services:
     image: "sdxl-turbo-cog:latest"
     # Expose port 5000 to the host
     ports:
-      - "5000:5001"
+      - "5001:5000"
