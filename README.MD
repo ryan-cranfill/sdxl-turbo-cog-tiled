@@ -1,3 +1,18 @@
+# Running Locally
+First, download the pre-trained weights:
+
+    cog run script/download-weights
+
+If you get an error, you may need to `chmod 777 script/download-weights`
+
+Build the docker image:
+
+    cog build -t sdxl-turbo-cog
+
+Run the docker image:
+
+    docker-compose up
+
 # stabilityai/sdxl-turbo
 
 This is an implementation of the [stabilityai/sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) as a Cog model. [Cog packages machine learning models as standard containers.](https://github.com/replicate/cog)
