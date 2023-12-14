@@ -1,9 +1,16 @@
 # Prediction interface for Cog
-from cog import BasePredictor, Input, Path
 import os
 import torch
+import diffusers
+from torch import Tensor
+from torch.nn import Conv2d
+from torch.nn import functional as F
+from torch.nn.modules.utils import _pair
 from typing import List
+from typing import Optional
+from cog import BasePredictor, Input, Path
 from diffusers import AutoPipelineForText2Image
+
 
 MODEL_NAME = "stabilityai/sdxl-turbo"
 MODEL_CACHE = "model-cache"
@@ -17,14 +24,10 @@ class Predictor(BasePredictor):
             torch_dtype=torch.float16,
             variant="fp16"
         )
-        pipe.vae.use_tiling = False
 
-        from typing import Optional
-        import diffusers
-        from torch import Tensor
-        from torch.nn import functional as F
-        from torch.nn import Conv2d
-        from torch.nn.modules.utils import _pair
+        # TILING FIX
+        # Courtesy of: https://github.com/huggingface/diffusers/issues/2633#issuecomment-1464014063
+        pipe.vae.use_tiling = False
 
         def asymmetricConv2DConvForward(self, input: Tensor, weight: Tensor, bias: Optional[Tensor]):
             self.paddingX = (self._reversed_padding_repeated_twice[0], self._reversed_padding_repeated_twice[1], 0, 0)
@@ -55,11 +58,11 @@ class Predictor(BasePredictor):
         self,
         prompt: str = Input(
             description="Input prompt",
-            default="21 years old girl,short cut,beauty,dusk,Ghibli style illustration"
+            default="colorful watercolor husky"
         ),
         negative_prompt: str = Input(
             description="Input Negative Prompt",
-            default="3d, cgi, render, bad quality, normal quality",
+            default="blurry, bad quality, low quality, low resolution",
         ),
         num_outputs: int = Input(
             description="Number of images to output.",
