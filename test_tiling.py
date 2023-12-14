@@ -8,7 +8,8 @@ SERVER_URL = 'http://192.168.1.17:5001'
 
 input_dict = {
     "input": {
-        "prompt": "colorful husky watercolor painting",
+        "prompt": "spaghetti, painting by van gogh",
+        "negative_prompt": "blurry, bad, low quality, low resolution",
         "num_outputs": 2,
         "num_inference_steps": 4,
         "width": 512,
@@ -27,8 +28,8 @@ if response.ok:
     # Output images are base64 encoded pngs in response.json()['output']
     data = response.json()
     for i, image in enumerate(data['output']):
-        tile_x = 4
-        tile_y = 3
+        tile_x = 2
+        tile_y = 2
         # Remove the header and decode the image
         image = image.split(',')[1]
         image = base64.b64decode(image)

@@ -13,6 +13,13 @@ Run the docker image:
 
     docker-compose up
 
+If you want to proxy calls to the model so that you can add CORs headers, use `fastapi_proxy.py`:
+    `pip install -r requirements_api.txt`
+    `python fastapi_proxy.py`
+
+If you want to use ngrok to expose that proxy to the internet, use:
+    `USE_NGROK=True uvicorn fastapi_proxy:app`
+
 # stabilityai/sdxl-turbo
 
 This is an implementation of the [stabilityai/sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) as a Cog model. [Cog packages machine learning models as standard containers.](https://github.com/replicate/cog)
