@@ -6,11 +6,9 @@ from torch import Tensor
 from torch.nn import Conv2d
 from torch.nn import functional as F
 from torch.nn.modules.utils import _pair
-from typing import List
-from typing import Optional
+from typing import List, Optional
 from cog import BasePredictor, Input, Path
 from diffusers import AutoPipelineForText2Image
-
 
 MODEL_NAME = "stabilityai/sdxl-turbo"
 MODEL_CACHE = "model-cache"
@@ -55,44 +53,48 @@ class Predictor(BasePredictor):
         self.pipe.vae.enable_tiling()
 
     def predict(
-        self,
-        prompt: str = Input(
-            description="Input prompt",
-            default="colorful watercolor husky"
-        ),
-        negative_prompt: str = Input(
-            description="Input Negative Prompt",
-            default="blurry, bad quality, low quality, low resolution",
-        ),
-        num_outputs: int = Input(
-            description="Number of images to output.",
-            ge=1,
-            le=4,
-            default=1,
-        ),
-        num_inference_steps: int = Input(
-            description="Number of inference steps",
-            ge=1, le=4, default=1,
-        ),
-        seed: int = Input(
-            description="Random seed. Leave blank to randomize the seed", default=None
-        ),
-        width: int = Input(
-            description="Width of the output image",
-            ge=1, le=1024, default=512,
-        ),
-        height: int = Input(
-            description="Height of the output image",
-            ge=1, le=1024, default=512,
-        ),
-        final_width: int = Input(
-            description="Width of the final output image",
-            ge=1, le=1024, default=512,
-        ),
-        final_height: int = Input(
-            description="Height of the final output image",
-            ge=1, le=1024, default=512,
-        ),
+            self,
+            prompt: str = Input(
+                description="Input prompt",
+                default="colorful watercolor husky"
+            ),
+            negative_prompt: str = Input(
+                description="Input Negative Prompt",
+                default="blurry, bad quality, low quality, low resolution",
+            ),
+            prompt_suffixes: str = Input(
+                description="Semicolon-delimited list of suffixes to append to the prompt in the order they are provided",
+                default=None,
+            ),
+            num_outputs: int = Input(
+                description="Number of images to output.",
+                ge=1,
+                le=4,
+                default=1,
+            ),
+            num_inference_steps: int = Input(
+                description="Number of inference steps",
+                ge=1, le=4, default=1,
+            ),
+            seed: int = Input(
+                description="Random seed. Leave blank to randomize the seed", default=None
+            ),
+            width: int = Input(
+                description="Width of the output image",
+                ge=1, le=1024, default=512,
+            ),
+            height: int = Input(
+                description="Height of the output image",
+                ge=1, le=1024, default=512,
+            ),
+            final_width: int = Input(
+                description="Width of the final output image",
+                ge=1, le=1024, default=512,
+            ),
+            final_height: int = Input(
+                description="Height of the final output image",
+                ge=1, le=1024, default=512,
+            ),
     ) -> List[Path]:
         """Run a single prediction on the model"""
         if seed is None:
@@ -100,8 +102,14 @@ class Predictor(BasePredictor):
         print(f"Using seed: {seed}")
         generator = torch.Generator("cuda").manual_seed(seed)
 
+        input_prompt = [prompt] * num_outputs
+        if prompt_suffixes is not None:
+            prompt_suffixes = prompt_suffixes.split(';')
+            for i, suffix in enumerate(prompt_suffixes):
+                input_prompt[i] = f"{input_prompt[i]} {suffix}"
+
         common_args = {
-            "prompt": [prompt] * num_outputs,
+            "prompt": input_prompt,
             "negative_prompt": [negative_prompt] * num_outputs,
             "guidance_scale": 0,
             "generator": generator,
@@ -121,4 +129,3 @@ class Predictor(BasePredictor):
             output_paths.append(Path(output_path))
 
         return output_paths
-        
