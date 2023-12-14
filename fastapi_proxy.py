@@ -3,21 +3,16 @@ import sys
 import httpx
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.logger import logger
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from fastapi.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings):
-    BASE_URL = "http://localhost:8000"
-    USE_NGROK = os.environ.get("USE_NGROK", "False") == "True"
+    BASE_URL: str = "http://localhost:8000"
+    USE_NGROK: bool = os.environ.get("USE_NGROK", "False") == "True"
 
 
 settings = Settings()
-
-
-# def init_webhooks(base_url):
-#     # Update inbound traffic via APIs to use the public-facing ngrok URL
-#     pass
 
 
 # Initialize the FastAPI app for a simple web server
@@ -33,13 +28,11 @@ if settings.USE_NGROK:
 
     # Open a ngrok tunnel to the dev server
     public_url = ngrok.connect(port).public_url
-    logger.info("ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
+    print("ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
 
-    # Update any base URLs or webhooks to use the public ngrok URL
     settings.BASE_URL = public_url
-    # init_webhooks(public_url)
 
-# Add CORs middleware
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,7 +62,13 @@ async def proxy(path: str, request: Request):
         else:
             raise HTTPException(status_code=405, detail="Method Not Allowed")
 
-    return Response(content=resp.content, status_code=resp.status_code, headers=dict(resp.headers))
+    headers = dict(resp.headers)
+    # Add CORS headers
+    headers["Access-Control-Allow-Origin"] = "*"
+    headers["Access-Control-Allow-Methods"] = "*"
+    headers["Access-Control-Allow-Headers"] = "*"
+
+    return Response(content=resp.content, status_code=resp.status_code, headers=headers)
 
 
 if __name__ == "__main__":
