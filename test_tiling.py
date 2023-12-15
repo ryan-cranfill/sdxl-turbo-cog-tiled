@@ -8,9 +8,10 @@ SERVER_URL = 'http://192.168.1.17:5001'
 
 input_dict = {
     "input": {
-        "prompt": "spaghetti, painting by van gogh",
+        "prompt": "spaghetti, oil on canvas",
+        "prompt_suffixes": "red colored; blue colored; green colored; orange colored",
         "negative_prompt": "blurry, bad, low quality, low resolution",
-        "num_outputs": 2,
+        "num_outputs": 4,
         "num_inference_steps": 4,
         "width": 512,
         "height": 512,
