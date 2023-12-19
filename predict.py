@@ -106,6 +106,9 @@ class Predictor(BasePredictor):
         if prompt_suffixes is not None:
             prompt_suffixes = prompt_suffixes.split(';')
             for i, suffix in enumerate(prompt_suffixes):
+                # More suffixes than prompts? Break out of the loop
+                if i >= len(input_prompt) - 1:
+                    break
                 input_prompt[i] = f"{input_prompt[i]} {suffix}"
 
         common_args = {
